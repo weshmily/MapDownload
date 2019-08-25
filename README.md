@@ -1,11 +1,12 @@
-# seedstatistics
+# MapDownload
 
-## Project setup
+
+## 初始化项目
 ```
 yarn install
 ```
 
-### Compiles and hot-reloads for development
+### 开始下载
 ```
 yarn start
 ```
