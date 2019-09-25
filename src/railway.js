@@ -2,13 +2,13 @@ var Bagpipe = require('bagpipe')
 var fs = require("fs");
 var request = require("request");
 
-var bou = [113.68652, 30.00000, 122.29980, 36.08462];//下载范围
-var Minlevel = 5;//最小层级
-var Maxlevel = 12;//最大层级
+var bou = [115.08179, 30.68516, 122.13501, 35.16483];//下载范围
+var Minlevel = 1;//最小层级
+var Maxlevel = 16;//最大层级
 var token = 'a4ee5c551598a1889adfabff55a5fc27';//天地图key
 var zpath = './tiles' // 瓦片目录
-var speed = 600;//并发数
-var mapstyle = 'img_w';//地图类型
+var speed = 10;//并发数
+var mapstyle = 'vec_w';//地图类型
 
 
 var all = [];
@@ -31,7 +31,7 @@ var user_agent_list_2 = [
     "Mozilla/5.0 (Windows NT 5.1) AppleWebKit/535.11 (KHTML, like Gecko) Chrome/17.0.963.84 Safari/535.11 SE 2.X MetaSr 1.0",
     "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; Trident/4.0; SV1; QQDownload 732; .NET4.0C; .NET4.0E; SE 2.X MetaSr 1.0)",
     "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Maxthon/4.4.3.4000 Chrome/30.0.1599.101 Safari/537.36",
-    "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.122 UBrowser/4.0.3214.0 Safari/537.36"
+    "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.122 UBrowser/4.0.3214.0 Safari/537.36",
 ]
 
 
@@ -65,12 +65,9 @@ function mainnAllXY(bounding, Minlevel, Maxlevel) {
         alli.y = [p1.title_Y, p2.title_Y] // 瓦片纵坐标范围（下至上）
         all.push(alli)
     }
-
     createDir()
 }
 mainnAllXY(bou, Minlevel, Maxlevel)
-
-
 
 
 
@@ -82,10 +79,10 @@ function createDir() {
             fs.access(`${zpath}/${all[z].t}`, fs.constants.F_OK, err => {
                 // 创建tiles/Z文件夹 ,Z是层级
                 if (err) fs.mkdir(`${zpath}/${all[z].t}`, err => { })
-                for (let x = all[z].x[0]; x <= all[z].x[1]; x++) {
-                    fs.access(`${zpath}/${all[z].t}/${x}`, fs.constants.F_OK, err => {
+                for (let y = all[z].y[0]; y <= all[z].y[1]; y++) {
+                    fs.access(`${zpath}/${all[z].t}/${y}`, fs.constants.F_OK, err => {
                         // 创建tiles/Z/X文件夹 ,X是瓦片横坐标
-                        if (err) fs.mkdir(`${zpath}/${all[z].t}/${x}`, err => { })
+                        if (err) fs.mkdir(`${zpath}/${all[z].t}/${y}`, err => { })
                     })
                 }
             })
@@ -100,22 +97,17 @@ function createDir() {
 /**
  * 创建下载队列
  */
-
-var sum = 0;
-var bag = new Bagpipe(speed, { timeout: 1000 })
 function task() {
+    var bag = new Bagpipe(speed, { timeout: 1000 })
     for (let z = 0; z <= all.length - 1; z++) {
         for (let x = all[z].x[0]; x <= all[z].x[1]; x++) {
             for (let y = all[z].y[0]; y <= all[z].y[1]; y++) {
                 // 将下载任务推入队列
-                ++sum
                 bag.push(download, x, y, all[z].t)
             }
         }
     }
 }
-console.log(bag)
-
 
 /**
  * 下载图片方法
@@ -124,8 +116,9 @@ console.log(bag)
  * @param {Number} z 
  */
 function download(x, y, z) {
-    var ts = Math.floor(Math.random() * 8)//随机生成0-7台服务器
-    let imgurl = `http://t${ts}.tianditu.gov.cn/DataServer?T=${mapstyle}&x=${x}&y=${y}&l=${z}&tk=${token}`;
+    // var ts = Math.floor(Math.random() * 8)//随机生成0-7台服务器
+    let imgurl = `http://218.2.231.245/mapjs2/rest/services/MapJS/js_yxzj_2016/MapServer/tile/${z}/${y}/${x}`
+    // let imgurl = `http://t${ts}.tianditu.gov.cn/DataServer?T=${mapstyle}&x=${x}&y=${y}&l=${z}&tk=${token}`;
     var ip = Math.floor(Math.random() * 256)//随机生成IP迷惑服务器
         + "." + Math.floor(Math.random() * 256)
         + "." + Math.floor(Math.random() * 256)
@@ -145,11 +138,8 @@ function download(x, y, z) {
     };
 
     request(options, (err, res, body) => {
-        if (err) {
-            bag.push(download, x, y, z)
-        }
-    }).pipe(fs.createWriteStream(`${zpath}/${z}/${x}/${y}.png`).on('finish', () => {
-        // console.log(`图片下载成功,第${z}层`)
-        console.log(--sum)
+        if (err) { console.log(err) }
+    }).pipe(fs.createWriteStream(`${zpath}/${z}/${y}/${x}.png`).on('finish', () => {
+        console.log(`图片下载成功,第${z}层`)
     }));
 }
