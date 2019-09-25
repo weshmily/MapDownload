@@ -4,7 +4,7 @@ var request = require("request");
 
 var bou = [113.68652, 30.00000, 122.29980, 36.08462];//下载范围
 var Minlevel = 5;//最小层级
-var Maxlevel = 16;//最大层级
+var Maxlevel = 13;//最大层级
 var token = 'a4ee5c551598a1889adfabff55a5fc27';//天地图key
 var zpath = './tiles' // 瓦片目录
 var speed = 200;//并发数
