@@ -4,10 +4,10 @@ var request = require("request");
 
 var bou = [113.68652, 30.00000, 122.29980, 36.08462];//下载范围
 var Minlevel = 5;//最小层级
-var Maxlevel = 12;//最大层级
+var Maxlevel = 16;//最大层级
 var token = 'a4ee5c551598a1889adfabff55a5fc27';//天地图key
 var zpath = './tiles' // 瓦片目录
-var speed = 600;//并发数
+var speed = 200;//并发数
 var mapstyle = 'img_w';//地图类型
 
 
@@ -147,9 +147,12 @@ function download(x, y, z) {
     request(options, (err, res, body) => {
         if (err) {
             bag.push(download, x, y, z)
+            console.log("request错误", err)
         }
     }).pipe(fs.createWriteStream(`${zpath}/${z}/${x}/${y}.png`).on('finish', () => {
         // console.log(`图片下载成功,第${z}层`)
         console.log(--sum)
+    }).on('error', (err) => {
+        console.log('发生异常:', err);
     }));
 }
