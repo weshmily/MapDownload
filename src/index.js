@@ -3,12 +3,12 @@ var fs = require("fs");
 var request = require("request");
 
 var bou = [113.68652, 30.00000, 122.29980, 36.08462];//下载范围
-var Minlevel = 5;//最小层级
-var Maxlevel = 13;//最大层级
+var Minlevel = 1;//最小层级
+var Maxlevel = 16;//最大层级
 var token = 'a4ee5c551598a1889adfabff55a5fc27';//天地图key
 var zpath = './tiles' // 瓦片目录
-var speed = 200;//并发数
-var mapstyle = 'img_w';//地图类型
+var speed = 100;//并发数
+var mapstyle = 'img_w';//地图类型(img_w:影像底图 cia_w:影像标注 vec_w:街道底图 cva_w街道标注)
 
 
 var all = [];
@@ -69,10 +69,6 @@ function mainnAllXY(bounding, Minlevel, Maxlevel) {
     createDir()
 }
 mainnAllXY(bou, Minlevel, Maxlevel)
-
-
-
-
 
 function createDir() {
     fs.access(zpath, fs.constants.F_OK, err => {
@@ -138,7 +134,6 @@ function download(x, y, z) {
             'User-Agent': user_agent_list_2[v],
             'X-Forwarded-For': ip,
             "Connection": 'keep-alive'
-
         },
         timeout: 5000,
         forever: true
@@ -150,7 +145,7 @@ function download(x, y, z) {
             console.log("request错误", err)
         }
     }).pipe(fs.createWriteStream(`${zpath}/${z}/${x}/${y}.png`).on('finish', () => {
-        // console.log(`图片下载成功,第${z}层`)
+        console.log(`图片下载成功,第${z}层`)
         console.log(--sum)
     }).on('error', (err) => {
         console.log('发生异常:', err);
