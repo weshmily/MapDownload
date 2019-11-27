@@ -37,7 +37,7 @@ or
 ![在这里插入图片描述](https://github-1251311788.cos.ap-beijing.myqcloud.com/MapDownload/configimg.jpg)
 
 
-3.下载
+3.开始下载
 
 ```
 npm start
