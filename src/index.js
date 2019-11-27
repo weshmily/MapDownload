@@ -110,7 +110,7 @@ function task() {
         }
     }
 }
-console.log(bag)
+
 
 
 /**
