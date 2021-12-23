@@ -2,13 +2,13 @@ var Bagpipe = require('bagpipe')
 var fs = require("fs");
 var request = require("request");
 
-var bou = [113.68652, 30.00000, 122.29980, 36.08462];//下载范围
-var Minlevel = 1;//最小层级
-var Maxlevel = 16;//最大层级
-var token = 'a4ee5c551598a1889adfabff55a5fc27';//天地图key(如果失效去天地图官网申请)
+var bou = [113.68652, 30.00000, 122.29980, 36.08462]; //下载范围
+var Minlevel = 1; //最小层级
+var Maxlevel = 2; //最大层级
+var token = '0b79a07d2808103ab84aa56485c331a8'; //天地图key(如果失效去天地图官网申请)
 var zpath = './tiles' // 瓦片目录
-var speed = 100;//并发数
-var mapstyle = 'img_w';//地图类型(img_w:影像底图 cia_w:影像标注 vec_w:街道底图 cva_w街道标注)
+var speed = 10; //并发数
+var mapstyle = 'vec_w'; //地图类型(img_w:影像底图 cia_w:影像标注 vec_w:街道底图 cva_w街道标注)
 
 
 var all = [];
@@ -47,7 +47,10 @@ function calcXY(lng, lat, level) {
     let lat_rad = lat * Math.PI / 180
     let y = (1 - Math.log(Math.tan(lat_rad) + 1 / Math.cos(lat_rad)) / Math.PI) / 2
     let title_Y = Math.floor(y * Math.pow(2, level))
-    return { title_X, title_Y }
+    return {
+        title_X,
+        title_Y
+    }
 }
 /**
  * 计算每个层级的瓦片坐标
@@ -73,15 +76,15 @@ mainnAllXY(bou, Minlevel, Maxlevel)
 function createDir() {
     fs.access(zpath, fs.constants.F_OK, err => {
         // 创建tiles文件夹
-        if (err) fs.mkdir(zpath, err => { })
+        if (err) fs.mkdir(zpath, err => {})
         for (let z = 0; z <= all.length - 1; z++) {
             fs.access(`${zpath}/${all[z].t}`, fs.constants.F_OK, err => {
                 // 创建tiles/Z文件夹 ,Z是层级
-                if (err) fs.mkdir(`${zpath}/${all[z].t}`, err => { })
+                if (err) fs.mkdir(`${zpath}/${all[z].t}`, err => {})
                 for (let x = all[z].x[0]; x <= all[z].x[1]; x++) {
                     fs.access(`${zpath}/${all[z].t}/${x}`, fs.constants.F_OK, err => {
                         // 创建tiles/Z/X文件夹 ,X是瓦片横坐标
-                        if (err) fs.mkdir(`${zpath}/${all[z].t}/${x}`, err => { })
+                        if (err) fs.mkdir(`${zpath}/${all[z].t}/${x}`, err => {})
                     })
                 }
             })
@@ -98,7 +101,10 @@ function createDir() {
  */
 
 var sum = 0;
-var bag = new Bagpipe(speed, { timeout: 1000 })
+var bag = new Bagpipe(speed, {
+    timeout: 1000
+})
+
 function task() {
     for (let z = 0; z <= all.length - 1; z++) {
         for (let x = all[z].x[0]; x <= all[z].x[1]; x++) {
@@ -120,12 +126,15 @@ function task() {
  * @param {Number} z 
  */
 function download(x, y, z) {
-    var ts = Math.floor(Math.random() * 8)//随机生成0-7台服务器
-    let imgurl = `http://t${ts}.tianditu.gov.cn/DataServer?T=${mapstyle}&x=${x}&y=${y}&l=${z}&tk=${token}`;
-    var ip = Math.floor(Math.random() * 256)//随机生成IP迷惑服务器
-        + "." + Math.floor(Math.random() * 256)
-        + "." + Math.floor(Math.random() * 256)
-        + "." + Math.floor(Math.random() * 256)
+    var ts = Math.floor(Math.random() * 8) //随机生成0-7台服务器
+    // let imgurl = `http://t${ts}.tianditu.gov.cn/DataServer?T=${mapstyle}&x=${x}&y=${y}&l=${z}&tk=${token}`;
+    let mapstylesegmentation = mapstyle.split("_")
+    let imgurl = `https://t${ts}.tianditu.gov.cn/${mapstyle}/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=${mapstylesegmentation[0]}&STYLE=default&TILEMATRIXSET=${mapstylesegmentation[1]}&FORMAT=tiles&TILECOL=${x}&TILEROW=${y}&TILEMATRIX=${z}&tk=${token}`
+    var ip = Math.floor(Math.random() * 256) //随机生成IP迷惑服务器
+        +
+        "." + Math.floor(Math.random() * 256) +
+        "." + Math.floor(Math.random() * 256) +
+        "." + Math.floor(Math.random() * 256)
     var v = Math.floor(Math.random() * 9)
     var options = {
         method: 'GET',
@@ -133,7 +142,9 @@ function download(x, y, z) {
         headers: {
             'User-Agent': user_agent_list_2[v],
             'X-Forwarded-For': ip,
-            "Connection": 'keep-alive'
+            "Connection": 'keep-alive',
+            'Referer': "https://www.tianditu.gov.cn/",
+            'Host': `t${ts}.tianditu.gov.cn`
         },
         timeout: 5000,
         forever: true
