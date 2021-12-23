@@ -289,11 +289,6 @@ sshpk@^1.7.0:
     safer-buffer "^2.0.2"
     tweetnacl "~0.14.0"
 
-tile-lnglat-transform@^1.3.2:
-  version "1.3.2"
-  resolved "https://registry.yarnpkg.com/tile-lnglat-transform/-/tile-lnglat-transform-1.3.2.tgz#f5f986038559de297cdc8ef4da23f707a4a7caff"
-  integrity sha1-9fmGA4VZ3il83I702iP3B6Snyv8=
-
 tough-cookie@~2.4.3:
   version "2.4.3"
   resolved "https://registry.yarnpkg.com/tough-cookie/-/tough-cookie-2.4.3.tgz#53f36da3f47783b0925afa06ff9f3b165280f781"
